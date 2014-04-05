@@ -1,1 +1,4 @@
 *.pyc
+junk
+.gitignore
+monitorlib.egg-info

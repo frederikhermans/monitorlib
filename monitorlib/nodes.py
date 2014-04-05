@@ -205,9 +205,12 @@ class TelosB(Node):
         self.start_app(['-b115200', './tty'])
         self.start_app(['-b115200', './tty'])
 
-    def close_serial(self):
+    def close_serial(self, block=False):
         '''Close the serial port.'''
         self.stop_app()
+        if block:
+            while self.is_serial_open():
+                time.sleep(1.0)
 
     def is_serial_open(self):
         '''Return if the serial port has been opened.'''
@@ -220,21 +223,27 @@ class TelosB(Node):
 
     def program(self, ihex_file, quiet=True):
         '''Flash `ihex_file` to the node.'''
-        user_host = 'root@{}'.format(self.host)
-        node_dir = '/var/wisenet/nodes/{}/'.format(self.gid)
         if quiet:
             out = open(os.devnull, 'w')
         else:
-            out = sys.stdout
+            # Set out to a clone of stdout. We can close this
+            # cloned file object without closing stdout.
+            out = os.fdopen(os.dup(sys.stdout.fileno()), 'w')
+
+        # Need to close serial port to flash.
+        serial_was_open = self.is_serial_open()
+        if serial_was_open:
+            self.close_serial(block=True)
 
         # Copy the image file
+        user_host = 'root@{}'.format(self.host)
+        node_dir = '/var/wisenet/nodes/{}/'.format(self.gid)
         res = subprocess.call(['scp', ihex_file,
                                '{}:{}/imgs'.format(user_host, node_dir)],
                                stdout=out)
         if res != 0:
             print 'Failed to copy image to {}.'.format(self)
-            if quiet:
-                out.close()
+            out.close()
             return False
 
         # Program the image
@@ -243,14 +252,14 @@ class TelosB(Node):
         res = subprocess.call(['ssh', user_host, cmd], stdout=out)
         if res != 0:
             print 'Failed to program image on node {}.'.format(self)
-            if quiet:
-                out.close()
+            out.close()
             return False
 
         # XXX Delete the image?
 
-        if quiet:
-            out.close()
+        if serial_was_open:
+            self.open_serial()
+        out.close()
         return True
 
     def bsl_reset(self):
