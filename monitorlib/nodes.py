@@ -221,6 +221,10 @@ class TelosB(Node):
         while not self.is_serial_open():
             time.sleep(1.0)
 
+    def write_serial(self, msg):
+        '''Write a message to the serial port.'''
+        self.send_to_app(msg)
+
     def program(self, ihex_file, quiet=True):
         '''Flash `ihex_file` to the node.'''
         if quiet:
