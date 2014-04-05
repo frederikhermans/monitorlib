@@ -159,7 +159,11 @@ class Node(object):
                 res = None
             except KeyboardInterrupt:
                 # Clean up and raise the exception
-                self.monitor.remove_listener(regex, callback)
+                try:
+                    self.monitor.remove_listener(regex, callback)
+                except ValueError:
+                    print >> sys.stderr, 'Did you try to', \
+                          'call block() twice?'
                 raise
 
             self.monitor.remove_listener(regex, callback)
