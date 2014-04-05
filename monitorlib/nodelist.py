@@ -24,6 +24,12 @@ def _attr_match(obj, attr, val):
                 return True
     return False
 
+def _insert_arg0(func, arg0):
+    '''Returns wrapper of `func` which has `arg0` as first argument.'''
+    def wrapper(*args, **kwargs):
+        return func(arg0, *args, **kwargs)
+    return wrapper
+
 def parse_node_file(filename, monitor):
     '''Return a list of nodes in `filename`.'''
     nodes = list()
@@ -72,6 +78,10 @@ class NodeList(object):
                 res.append(node)
         return NodeList(res)
 
+    def remove(self, node):
+        '''Remove a node from the node list.'''
+        self.nodes.remove(node)
+
     def _sequential(self, name):
         '''Returns a function that runs `name` on all nodes sequentially.'''
         def run_sequential(*args, **kwargs):
@@ -86,10 +96,19 @@ class NodeList(object):
 
            The returned function blocks until all results have been received.'''
         def run_parallel(*args, **kwargs):
+            if 'callback_' in kwargs:
+                callback = kwargs['callback_']
+                del kwargs['callback_']
+            else:
+                callback = None
+
             async_res = dict()
             pool = multiprocessing.pool.ThreadPool(len(self.nodes))
             for node in self.nodes:
-                res = pool.apply_async(getattr(node, name), args, kwargs)
+                if callback:
+                    node_callback = _insert_arg0(callback, node)
+                func = getattr(node, name)
+                res = pool.apply_async(func, args, kwargs, node_callback)
                 async_res[node] = res
             return {n: r.get() for n, r in async_res.iteritems()}
         return run_parallel
