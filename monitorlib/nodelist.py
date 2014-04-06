@@ -107,6 +107,8 @@ class NodeList(object):
             for node in self.nodes:
                 if callback:
                     node_callback = _insert_arg0(callback, node)
+                else:
+                    node_callback = None
                 func = getattr(node, name)
                 res = pool.apply_async(func, args, kwargs, node_callback)
                 async_res[node] = res
