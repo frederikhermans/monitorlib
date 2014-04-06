@@ -130,8 +130,8 @@ class Node(object):
         '''Stop the app on the node.'''
         self._send_command('CTRL_NET_DOWN_REQ')
 
-    def send_to_app(self, msg, period=0):
-        '''Send a string to the stdin of the app.'''
+    def write(self, msg, period=0):
+        '''Write a string to the stdin of the app.'''
         self._send_command('CTRL_SEND_TO_APP {}'.format(msg), period=period)
 
     def expect(self, pattern):
@@ -172,27 +172,16 @@ class Node(object):
         self.monitor.add_listener(regex, callback)
         return block
 
-    def send_to_app_and_expect(self, msg, pattern, timeout=1.0, tries=1):
-        '''Send `msg` to the app and block until `pattern` is received.'''
+    def write_and_expect(self, msg, pattern, timeout=1.0, tries=1):
+        '''Write `msg` to the app and block until `pattern` is received.'''
         for _ in xrange(tries):
             block = self.expect(pattern)
-            self.send_to_app(msg)
+            self.write(msg)
             res = block(timeout=timeout)
             if res:
                 return True
         return False 
 
-    def send_sequence_to_app(self, seq, timeout=3.0, tries=4):
-        '''Send a sequence of commands to the app.
-
-           `seq` must be a sequence of `(cmd, pattern)` tuples, where `cmd`
-           is a string describing the command to send, and `pattern` is a
-           pattern that is expected to be received after the command.
-        '''
-        for cmd, pattern in seq:
-            if not self.send_to_app_and_expect(cmd, pattern, timeout, tries):
-                return False
-        return True
 
     def __repr__(self):
         return '{}@{}'.format(self.gid, self.host)
@@ -224,10 +213,6 @@ class TelosB(Node):
         '''Block until the serial port has been opened.'''
         while not self.is_serial_open():
             time.sleep(1.0)
-
-    def write_serial(self, msg):
-        '''Write a message to the serial port.'''
-        self.send_to_app(msg)
 
     def program(self, ihex_file, quiet=True):
         '''Flash `ihex_file` to the node.'''
