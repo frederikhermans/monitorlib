@@ -8,6 +8,7 @@ import socket
 import subprocess
 import sys
 import time
+import types
 
 _RE_PING = r'(?P<at>\d+) (?P<ip>[\d+\.]+):(?P<port>\d+) ' + \
            r'(?P<type>[^ ]+) {} (?P<id>[^ ]+ )?{{(?P<attributes>[^}}]+)}}.*'
@@ -182,6 +183,9 @@ class Node(object):
                 return True
         return False 
 
+    def add_method(self, func):
+        '''Add `func` as a method to this object.'''
+        setattr(self, func.func_name, types.MethodType(func, self))
 
     def __repr__(self):
         return '{}@{}'.format(self.gid, self.host)
