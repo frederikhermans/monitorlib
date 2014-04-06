@@ -4,7 +4,7 @@ from fnmatch import fnmatch
 import multiprocessing.pool
 import re
 
-import nodes as monitorlib_nodes
+import monitorlib.nodes as monitorlib_nodes
 
 _NODE_FILE_LINE = re.compile(r'(?P<gid>[^\s]+)\s+' +
                              r'(?P<type>[^\s]+)\s+' +
@@ -27,6 +27,7 @@ def _attr_match(obj, attr, val):
 def _insert_arg0(func, arg0):
     '''Returns wrapper of `func` which has `arg0` as first argument.'''
     def wrapper(*args, **kwargs):
+        # pylint: disable=missing-docstring
         return func(arg0, *args, **kwargs)
     return wrapper
 
@@ -85,6 +86,7 @@ class NodeList(object):
     def _sequential(self, name):
         '''Returns a function that runs `name` on all nodes sequentially.'''
         def run_sequential(*args, **kwargs):
+            # pylint: disable=missing-docstring
             res = dict()
             for node in self.nodes:
                 res[node] = getattr(node, name)(*args, **kwargs)
@@ -96,6 +98,7 @@ class NodeList(object):
 
            The returned function blocks until all results have been received.'''
         def run_parallel(*args, **kwargs):
+            # pylint: disable=missing-docstring
             if 'callback_' in kwargs:
                 callback = kwargs['callback_']
                 del kwargs['callback_']

@@ -1,4 +1,10 @@
-# Convenience import
+'''Package for interfacing the Sensei-UU testbed'''
 
-from monitor import Monitor
-from nodelist import NodeList
+# Convenience import
+from monitorlib.monitor import Monitor
+from monitorlib.nodelist import NodeList
+
+import monitorlib.monitor as monitor
+import monitorlib.nodelist as nodelist
+import monitorlib.nodes as nodes
+import monitorlib.sitemanagerhandle as sitemanagerhandle

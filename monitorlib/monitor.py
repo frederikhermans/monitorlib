@@ -1,7 +1,10 @@
 '''Monitor class implementation.'''
 
-from sitemanagerhandle import SiteManagerHandle
-import nodelist
+from datetime import datetime
+import re
+
+from monitorlib.sitemanagerhandle import SiteManagerHandle
+import monitorlib.nodelist as nodelist
 
 _LOG_DATE_FMT = '%Y-%m-%d %H:%M:%S'
 
