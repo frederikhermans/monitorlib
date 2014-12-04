@@ -265,3 +265,16 @@ class TelosB(Node):
         cmd = 'cd /var/wisenet/nodes/{}/ && ./reset'.format(self.gid)
         res = subprocess.call(['ssh', user_host, cmd])
         return res == 0
+
+
+class UpwisU1(TelosB):
+    '''An Upwis U1 node.
+
+    From monitorlib's perspective, these are identical with TelosB, except
+    for a different baud rate for the serial port.
+    '''
+    def open_serial(self):
+        # Call twice to work around site manager issues.
+        self.start_app(['-b460800', './tty'])
+        self.start_app(['-b460800', './tty'])
+
